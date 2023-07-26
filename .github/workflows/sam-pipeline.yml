@@ -1,0 +1,42 @@
+name: Deploy SlackClientRegistration2 (Lambda)
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: "us-east-1"
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Setup SAM
+        uses: aws-actions/setup-sam@v1
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::678002618618:role/GitHubActionsDeployLambda
+          role-session-name: samplerolesession
+          aws-region: ${{ env.AWS_REGION }}
+
+      # sam build
+      - name: SAM build
+        run: sam build # --use-container
+
+# Run Unit tests- Specify unit tests here
+
+      - name: SAM deploy
+        run: sam deploy #--no-confirm-changeset --no-fail-on-empty-changeset --stack-name sam-hello-world --capabilities CAPABILITY_IAM --region ${{ env.AWS_REGION }}
